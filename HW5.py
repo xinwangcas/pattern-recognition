@@ -171,16 +171,16 @@ def CentralMoment(s):
 		M_23.append(M23)
 		M14 = CalcMoment(x_c, y_c, 1, 4, I)
 		M_14.append(M14)
-    Mat_11 = Normalize(Mat_11)
-    Mat_21 = Normalize(Mat_21)
-    Mat_12 = Normalize(Mat_12)
-    Mat_31 = Normalize(Mat_31)
-    Mat_22 = Normalize(Mat_22)
-    Mat_13 = Normalize(Mat_13)
-    Mat_41 = Normalize(Mat_41)
-    Mat_32 = Normalize(Mat_32)
-    Mat_23 = Normalize(Mat_23)
-    Mat_14 = Normalize(Mat_14)
+    Mat_11 = Normalize(s, 0, Mat_11)
+    Mat_21 = Normalize(s, 1, Mat_21)
+    Mat_12 = Normalize(s, 2, Mat_12)
+    Mat_31 = Normalize(s, 3, Mat_31)
+    Mat_22 = Normalize(s, 4, Mat_22)
+    Mat_13 = Normalize(s, 5, Mat_13)
+    Mat_41 = Normalize(s, 6, Mat_41)
+    Mat_32 = Normalize(s, 7, Mat_32)
+    Mat_23 = Normalize(s, 8, Mat_23)
+    Mat_14 = Normalize(s, 9, Mat_14)
     M = np.zeros(10000).reshape(10, 10, 100)
     M[0] = Mat_11
     M[1] = Mat_21
@@ -339,17 +339,17 @@ def print_mat(mat):
 		b += a
 	print >> f, b
 
-def Normalize(mat):
-	rms = 0
+def Normalize(s, k, mat):
 	sum = 0
 	n = len(mat)*len(mat[0])
+	if s == 'A':
+		for i in range(0, len(mat)):
+		    for j in range(0, len(mat[0])):
+			sum += math.pow(mat[i][j], 2)
+			rms[k] = math.sqrt(sum/n)
 	for i in range(0, len(mat)):
 	    for j in range(0, len(mat[0])):
-		sum += math.pow(mat[i][j], 2)
-	rms = math.sqrt(sum/n)
-	for i in range(0, len(mat)):
-	    for j in range(0, len(mat[0])):
-		mat[i][j] /= rms
+		mat[i][j] /= rms[k]
 	return mat	
 	
 def CalcMoment(x_c, y_c, p, q, I):
@@ -387,7 +387,6 @@ def PixelIndependent():
 				dist = 0
 				for k in range (0, 256):
 					dist += np.dot(MA[i][j][k], (math.log(P[n][k]))) + np.dot(1-MA[i][j][k], (math.log(Q[n][k])))
-					print dist
 				if (dist > max_dist):
 					max_dist = dist
 					max_n = n
@@ -428,7 +427,6 @@ def PixelMinDistance():
 			for j in range(0, 100):
 				u[i][k] += MA[i][j][k]
 			u[i][k] /= 100
-			print u[i][k]
 	errorsA = 0
 	errorsB = 0
 	cA = np.zeros(100).reshape(10, 10)
@@ -518,9 +516,11 @@ def PixelSpace(s):
 
 handlefile('A')
 handlefile('B')
+rms = np.ones(10)
 MinDistance()
 IdenticalCovariance()
 PixelMinDistance()
 PixelIndependent()
+print rms
 #CentralMoment('A')
 #CentralMoment('B')
