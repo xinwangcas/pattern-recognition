@@ -4,6 +4,7 @@
 import re
 import os
 import string
+import sys
 import math
 import numpy as np
 from random import randint
@@ -172,16 +173,16 @@ def CentralMoment(s):
 		M_23.append(M23)
 		M14 = CalcMoment(x_c, y_c, 1, 4, I)
 		M_14.append(M14)
-    Mat_11 = Normalize(Mat_11)
-    Mat_21 = Normalize(Mat_21)
-    Mat_12 = Normalize(Mat_12)
-    Mat_31 = Normalize(Mat_31)
-    Mat_22 = Normalize(Mat_22)
-    Mat_13 = Normalize(Mat_13)
-    Mat_41 = Normalize(Mat_41)
-    Mat_32 = Normalize(Mat_32)
-    Mat_23 = Normalize(Mat_23)
-    Mat_14 = Normalize(Mat_14)
+    Mat_11 = Normalize(s, 0, Mat_11)
+    Mat_21 = Normalize(s, 1, Mat_21)
+    Mat_12 = Normalize(s, 2, Mat_12)
+    Mat_31 = Normalize(s, 3, Mat_31)
+    Mat_22 = Normalize(s, 4, Mat_22)
+    Mat_13 = Normalize(s, 5, Mat_13)
+    Mat_41 = Normalize(s, 6, Mat_41)
+    Mat_32 = Normalize(s, 7, Mat_32)
+    Mat_23 = Normalize(s, 8, Mat_23)
+    Mat_14 = Normalize(s, 9, Mat_14)
     M = np.zeros(10000).reshape(10, 10, 100)
     M[0] = Mat_11
     M[1] = Mat_21
@@ -194,6 +195,19 @@ def CentralMoment(s):
     M[8] = Mat_23
     M[9] = Mat_14
     return M
+
+def Normalize(s, k, mat):
+	sum = 0
+	n = len(mat)*len(mat[0])
+	if s == 'A':
+		for i in range(0, len(mat)):
+		    for j in range(0, len(mat[0])):
+			sum += math.pow(mat[i][j], 2)
+			rms[k] = math.sqrt(sum/n)
+	for i in range(0, len(mat)):
+	    for j in range(0, len(mat[0])):
+		mat[i][j] /= rms[k]
+	return mat	
 
 def Moment1NNL2():
 	MA = CentralMoment('A')
@@ -260,7 +274,9 @@ def Moment1NNL4():
 				for m in range(0, 100):
 					dist = 0
 					for i in range(0, 10):
-						dist += pow((MB[i][j][k] - MA[i][n][m]),4)
+						dist += pow((MB[i][j][k] - MA[i][n][m]),2)
+						cost += 1
+						dist += pow(dist, 2)
 						cost += 1
 					if (dist < min_dist):
 						min_dist = dist
@@ -297,57 +313,42 @@ def Moment5NNL2():
 	cB = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
+					min_dist[5] = 0
 					for i in range(0, 10):
-						dist += pow((MB[i][j][k] - MA[i][n][m]),2)
+						min_dist[5] += pow((MB[i][j][k] - MA[i][n][m]),2)
 						cost += 1
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+					min_dist[5] = np.sqrt(min_dist[5])
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cB[j][classNum] += 1
 				errorsB += 1
@@ -391,18 +392,6 @@ def print_mat(mat):
 		b += a
 	print >> f, b
 
-def Normalize(mat):
-	rms = 0
-	sum = 0
-	n = len(mat)*len(mat[0])
-	for i in range(0, len(mat)):
-	    for j in range(0, len(mat[0])):
-		sum += math.pow(mat[i][j], 2)
-	rms = math.sqrt(sum/n)
-	for i in range(0, len(mat)):
-	    for j in range(0, len(mat[0])):
-		mat[i][j] /= rms
-	return mat	
 	
 def CalcMoment(x_c, y_c, p, q, I):
 	M = 0
@@ -411,76 +400,11 @@ def CalcMoment(x_c, y_c, p, q, I):
 		M += math.pow((x + 1 - x_c), p)*math.pow((y + 1 - y_c), q)*I[y][x]
 	return M
 
-def PixelIndependent():
-	MA = PixelSpace('A')
-	MB = PixelSpace('B')
-	P = np.zeros(2560).reshape(10, 256)
-	Q = np.zeros(2560).reshape(10, 256)
-	for i in range (0, 10):
-		for k in range(0, 256):
-			for j in range(0, 100):
-				P[i][k] += MA[i][j][k]
-			P[i][k] /= 100
-			if (P[i][k] == 0):
-				P[i][k] += 1.0/(3*100)
-			if (P[i][k] == 1):
-				P[i][k] = (3*100-1.0)/(3*100)
-			Q[i][k] = 1-P[i][k]
-	errorsA = 0
-	errorsB = 0
-	cA = np.zeros(100).reshape(10, 10)
-	cB = np.zeros(100).reshape(10, 10)
-	
-	for i in range(0, 10):
-		for j in range(0, 100):
-			max_dist = -1000000
-			max_n = 0
-			for n in range(0, 10):
-				dist = 0
-				for k in range (0, 256):
-					dist += np.dot(MA[i][j][k], (math.log(P[n][k]))) + np.dot(1-MA[i][j][k], (math.log(Q[n][k])))
-					print dist
-				if (dist > max_dist):
-					max_dist = dist
-					max_n = n
-			if(i != max_n):
-				cA[i][max_n] += 1
-				errorsA += 1
-			else:
-				cA[i][i] += 1
-	print_mat(cA)
-	print >> f, errorsA
-	
-	for i in range(0, 10):
-		for j in range(0, 100):
-			max_dist = -1000000
-			max_n = 0
-			for n in range(0, 10):
-				dist = 0
-				for k in range (0, 256):
-					dist += np.dot(MB[i][j][k], (math.log(P[n][k]))) + np.dot(1-MB[i][j][k], (math.log(Q[n][k])))
-				if (dist > max_dist):
-					max_dist = dist
-					max_n = n
-			if(i != max_n):
-				cB[i][max_n] += 1
-				errorsB += 1
-			else:
-				cB[i][i] += 1
-	print_mat(cB)
-	print >> f, errorsB
-
 def Pixel1NNL2():
 	MA = PixelSpace('A')
 	MB = PixelSpace('B')
 	u = np.zeros(2560).reshape(10, 256)
 	
-	for i in range(0, 10):
-		for k in range(0, 256):
-			for j in range(0, 100):
-				u[i][k] += MA[i][j][k]
-			u[i][k] /= 100
-			print u[i][k]
 	errorsA = 0
 	errorsB = 0
 	
@@ -520,68 +444,47 @@ def Pixel5NNL2():
 	MB = PixelSpace('B')
 	u = np.zeros(2560).reshape(10, 256)
 	
-	for i in range(0, 10):
-		for k in range(0, 256):
-			for j in range(0, 100):
-				u[i][k] += MA[i][j][k]
-			u[i][k] /= 100
-			print u[i][k]
 	errorsB = 0
 	cost = 0
 	cB = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
+					min_dist[5] = 0
 					for i in range(0, 256):
-						dist += pow((MB[j][k][i] - MA[n][m][i]),2)
+						min_dist[5] += pow((MB[j][k][i] - MA[n][m][i]),2)
 						cost += 1
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+					min_dist[5] = np.sqrt(min_dist[5])
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cB[j][classNum] += 1
 				errorsB += 1
@@ -637,10 +540,16 @@ def PixelSpace(s):
 
 handlefile('A')
 handlefile('B')
-Moment1NNL2()
-Moment1NNL4()
-Moment5NNL2()
+rms = np.zeros(10)
+#Moment1NNL2()
+rms = np.zeros(10)
+#Moment1NNL4()
+rms = np.zeros(10)
+#Moment5NNL2()
+rms = np.zeros(10)
 Pixel1NNL2()
-Pixel5NNL2()
+rms = np.zeros(10)
+#Pixel5NNL2()
+rms = np.zeros(10)
 #CentralMoment('A')
 #CentralMoment('B')
