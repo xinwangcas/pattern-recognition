@@ -753,6 +753,8 @@ def MinDistance():
 				errorsA += 1
 			else:
 				cA[j][j] += 1
+	print >> f, "MinDistance:"
+	print >> f, "Testing Set A"
 	print_mat(cA)
 	print >> f, errorsA
 	errorsB = 0
@@ -773,6 +775,7 @@ def MinDistance():
 				errorsB += 1
 			else:
 				cB[j][j] += 1
+	print >> f, "Testing Set B"
 	print_mat(cB)
 	print >> f, errorsB
 
@@ -794,6 +797,7 @@ def MinDistance():
 				errorsC += 1
 			else:
 				cC[j][j] += 1
+	print >> f, "Testing Set C"
 	print_mat(cC)
 	print >> f, errorsC
 
@@ -815,6 +819,7 @@ def MinDistance():
 				errorsD += 1
 			else:
 				cD[j][j] += 1
+	print >> f, "Testing Set D"
 	print_mat(cD)
 	print >> f, errorsD
 
@@ -869,6 +874,8 @@ def IdenticalCovariance():
 				errorsA += 1
 			else:
 				cA[i][i] += 1
+	print >> f, "IdenticalCovariance"
+	print >> f, "Testing Set A"
 	print_mat(cA)
 	print >> f, errorsA
 	
@@ -886,6 +893,7 @@ def IdenticalCovariance():
 				errorsB += 1
 			else:
 				cB[i][i] += 1
+	print >> f, "Testing Set B"
 	print_mat(cB)
 	print >> f, errorsB
 	
@@ -903,6 +911,7 @@ def IdenticalCovariance():
 				errorsC += 1
 			else:
 				cC[i][i] += 1
+	print >> f, "Testing Set C"
 	print_mat(cC)
 	print >> f, errorsC
 	
@@ -920,6 +929,7 @@ def IdenticalCovariance():
 				errorsD += 1
 			else:
 				cD[i][i] += 1
+	print >> f, "Testing Set D"
 	print_mat(cD)
 	print >> f, errorsD
 
@@ -987,9 +997,38 @@ def Pixel1NNL2():
 	MB = PixelSpace('B')
 	MC = PixelSpace('C')
 	MD = PixelSpace('D')
+	errorsA = 0
 	errorsB = 0
 	errorsC = 0
 	errorsD = 0
+	
+	cA = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
+	for j in range (0, 10):
+		for k in range (0, 100):
+			min_dist = 1000000
+			min_n = 0
+			for n in range(0, 10):
+				for m in range(0, 100):
+					dist = 0
+					for i in range(0, 256):
+						dist += pow((MA[j][k][i] - MA[n][m][i]),2)
+					if (dist < min_dist):
+						min_dist = dist
+						min_n = n
+					if (dist == min_dist):
+						r = randint(1,2)
+						if(r == 1):
+							min_dist = dist
+							min_n = n
+			if (j != min_n):
+				cA[j][min_n] += 1
+				errorsA += 1
+			else:
+				cA[j][j] += 1
+	print >> f, "Pixel1NNL2:"
+	print >> f, "Testing Set A"
+	print_mat(cA)
+	print >> f, errorsA
 	
 	cB = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
@@ -1014,6 +1053,7 @@ def Pixel1NNL2():
 				errorsB += 1
 			else:
 				cB[j][j] += 1
+	print >> f, "Testing Set B"
 	print_mat(cB)
 	print >> f, errorsB
 	
@@ -1040,6 +1080,7 @@ def Pixel1NNL2():
 				errorsC += 1
 			else:
 				cC[j][j] += 1
+	print >> f, "Testing Set C"
 	print_mat(cC)
 	print >> f, errorsC
 
@@ -1066,6 +1107,7 @@ def Pixel1NNL2():
 				errorsD += 1
 			else:
 				cD[j][j] += 1
+	print >> f, "Testing Set D"
 	print_mat(cD)
 	print >> f, errorsD
 
@@ -1075,6 +1117,69 @@ def Pixel5NNL2():
 	MC = PixelSpace('C')
 	MD = PixelSpace('D')
 	
+	errorsA = 0
+	cA = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
+	for j in range (0, 10):
+		for k in range (0, 100):
+			min_dist = np.zeros(5);
+			min_n = np.zeros(5);
+			for x in range(0, 5):
+				min_dist[x] = 1000000
+				min_n[x] = 0
+			for n in range(0, 10):
+				for m in range(0, 100):
+					dist = 0
+					for i in range(0, 256):
+						dist += pow((MA[j][k][i] - MA[n][m][i]),2)
+					if (dist < max(min_dist)):
+						for cnt in range (0, 5):
+							if min_dist[cnt] == max(min_dist):
+								min_dist[cnt] = dist
+								min_n[cnt] = n
+					if (dist == max(min_dist)):
+						r = randint(1,2)
+						if(r == 1):
+							for cnt in range (0, 5):
+								if min_dist[cnt] == max(min_dist):
+									min_dist[cnt] = dist
+									min_n[cnt] = n
+			classes = np.zeros(10)
+			classNum = -1
+			n = 0
+			for cnt in range(0, 10):
+				classes[cnt] = 0
+			for cnt in range(0, 5):
+				classes[min_n[cnt]] += 1
+			for cnt in range(0, 10):
+				if(classes[min_n[cnt]] >= 3):
+					classNum = min_n[cnt]
+					n = 3
+					break
+				elif(classes[min_n[cnt]] >= 2):
+					if(classNum != -1):
+						r = randint(1,2)
+						if(r == 1):
+							classNum = min_n[cnt]
+					else:
+						classNum = min_n[cnt]
+					n = 2
+				elif(n <= 1 and classes[min_n[cnt]] >= 1):
+					if(classNum != -1):
+						r = randin(1,2)
+						if(r == 1):
+							classNum = min_n[cnt]
+					else:
+						classNum = min_n[cnt]
+					n = 1
+			if (j != classNum):
+				cA[j][classNum] += 1
+				errorsA += 1
+			else:
+				cA[j][j] += 1
+	print >> f, "Testing set A"
+	print_mat(cA)
+	print >> f, errorsA
+
 	errorsB = 0
 	cB = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
@@ -1134,6 +1239,7 @@ def Pixel5NNL2():
 				errorsB += 1
 			else:
 				cB[j][j] += 1
+	print >> f, "Testing set B"
 	print_mat(cB)
 	print >> f, errorsB
 
@@ -1196,6 +1302,7 @@ def Pixel5NNL2():
 				errorsC += 1
 			else:
 				cC[j][j] += 1
+	print >> f, "Testing set C"
 	print_mat(cC)
 	print >> f, errorsC
 
@@ -1258,6 +1365,7 @@ def Pixel5NNL2():
 				errorsD += 1
 			else:
 				cD[j][j] += 1
+	print >> f, "Testing set D"
 	print_mat(cD)
 	print >> f, errorsD
 
@@ -1274,6 +1382,7 @@ def PixelMinDistance():
 			for j in range(0, 100):
 				u[i][k] += MA[i][j][k]
 			u[i][k] /= 100
+	errorsA = 0
 	errorsB = 0
 	errorsC = 0
 	errorsD = 0
@@ -1290,6 +1399,8 @@ def PixelMinDistance():
 				dist = 0
 				for k in range (0, 256):
 					dist += math.pow((MA[i][j][k] - u[n][k]), 2)
+					if(dist > min_dist):
+						break
 				if (dist < min_dist):
 					min_dist = dist
 					min_n = n
@@ -1298,6 +1409,8 @@ def PixelMinDistance():
 				errorsA += 1
 			else:
 				cA[i][i] += 1
+	print >> f, "PixelMinDistance"
+	print >> f, "Testing Set A"
 	print_mat(cA)
 	print >> f, errorsA
 
@@ -1309,6 +1422,8 @@ def PixelMinDistance():
 				dist = 0
 				for k in range (0, 256):
 					dist += math.pow((MB[i][j][k] - u[n][k]), 2)
+					if(dist > min_dist):
+						break
 				if (dist < min_dist):
 					min_dist = dist
 					min_n = n
@@ -1317,15 +1432,168 @@ def PixelMinDistance():
 				errorsB += 1
 			else:
 				cB[i][i] += 1
+	print >> f, "Testing Set B"
 	print_mat(cB)
 	print >> f, errorsB
+	
+	for i in range(0, 10):
+		for j in range (0, 100):
+			min_dist = 1000000
+			min_n = 0
+			for n in range (0, 10):
+				dist = 0
+				for k in range (0, 256):
+					dist += math.pow((MC[i][j][k] - u[n][k]), 2)
+					if(dist > min_dist):
+						break
+				if (dist < min_dist):
+					min_dist = dist
+					min_n = n
+			if(i != min_n):
+				cC[i][min_n] += 1
+				errorsC += 1
+			else:
+				cC[i][i] += 1
+	print >> f, "Testing Set C"
+	print_mat(cC)
+	print >> f, errorsC
+
+	for i in range(0, 10):
+		for j in range (0, 100):
+			min_dist = 1000000
+			min_n = 0
+			for n in range (0, 10):
+				dist = 0
+				for k in range (0, 256):
+					dist += math.pow((MD[i][j][k] - u[n][k]), 2)
+					if(dist > min_dist):
+						break
+				if (dist < min_dist):
+					min_dist = dist
+					min_n = n
+			if(i != min_n):
+				cD[i][min_n] += 1
+				errorsD += 1
+			else:
+				cD[i][i] += 1
+	print >> f, "Testing Set D"
+	print_mat(cD)
+	print >> f, errorsD
+
+def PixelIndependent():
+	MA = PixelSpace('A')
+	MB = PixelSpace('B')
+	MC = PixelSpace('C')
+	MD = PixelSpace('D')
+	P = np.zeros(2560).reshape(10, 256)
+	Q = np.zeros(2560).reshape(10, 256)
+	for i in range (0, 10):
+		for k in range(0, 256):
+			for j in range(0, 100):
+				P[i][k] += MA[i][j][k]
+			P[i][k] /= 100
+			if (P[i][k] == 0):
+				P[i][k] += 1.0/(3*100)
+			if (P[i][k] == 1):
+				P[i][k] = (3*100-1.0)/(3*100)
+			Q[i][k] = 1-P[i][k]
+	errorsA = 0
+	errorsB = 0
+	errorsC = 0
+	errorsD = 0
+	cA = np.zeros(100).reshape(10, 10)
+	cB = np.zeros(100).reshape(10, 10)
+	cC = np.zeros(100).reshape(10, 10)
+	cD = np.zeros(100).reshape(10, 10)
+	
+	for i in range(0, 10):
+		for j in range(0, 100):
+			max_dist = -1000000
+			max_n = 0
+			for n in range(0, 10):
+				dist = 0
+				for k in range (0, 256):
+					dist += np.dot(MA[i][j][k], (math.log(P[n][k]))) + np.dot(1-MA[i][j][k], (math.log(Q[n][k])))
+				if (dist > max_dist):
+					max_dist = dist
+					max_n = n
+			if(i != max_n):
+				cA[i][max_n] += 1
+				errorsA += 1
+			else:
+				cA[i][i] += 1
+	print >> f, "PixelIndependent"
+	print >> f, "Testing Set A"
+	print_mat(cA)
+	print >> f, errorsA
+	
+	for i in range(0, 10):
+		for j in range(0, 100):
+			max_dist = -1000000
+			max_n = 0
+			for n in range(0, 10):
+				dist = 0
+				for k in range (0, 256):
+					dist += np.dot(MB[i][j][k], (math.log(P[n][k]))) + np.dot(1-MB[i][j][k], (math.log(Q[n][k])))
+				if (dist > max_dist):
+					max_dist = dist
+					max_n = n
+			if(i != max_n):
+				cB[i][max_n] += 1
+				errorsB += 1
+			else:
+				cB[i][i] += 1
+	print >> f, "Testing Set B"
+	print_mat(cB)
+	print >> f, errorsB
+
+	for i in range(0, 10):
+		for j in range(0, 100):
+			max_dist = -1000000
+			max_n = 0
+			for n in range(0, 10):
+				dist = 0
+				for k in range (0, 256):
+					dist += np.dot(MC[i][j][k], (math.log(P[n][k]))) + np.dot(1-MB[i][j][k], (math.log(Q[n][k])))
+				if (dist > max_dist):
+					max_dist = dist
+					max_n = n
+			if(i != max_n):
+				cC[i][max_n] += 1
+				errorsC += 1
+			else:
+				cC[i][i] += 1
+	print >> f, "Testing Set C"
+	print_mat(cC)
+	print >> f, errorsC
+
+	for i in range(0, 10):
+		for j in range(0, 100):
+			max_dist = -1000000
+			max_n = 0
+			for n in range(0, 10):
+				dist = 0
+				for k in range (0, 256):
+					dist += np.dot(MD[i][j][k], (math.log(P[n][k]))) + np.dot(1-MB[i][j][k], (math.log(Q[n][k])))
+				if (dist > max_dist):
+					max_dist = dist
+					max_n = n
+			if(i != max_n):
+				cD[i][max_n] += 1
+				errorsD += 1
+			else:
+				cD[i][i] += 1
+	print >> f, "Testing Set D"
+	print_mat(cD)
+	print >> f, errorsD
 
 def PixelSpace(s):
 
     M = np.zeros(256000).reshape(10, 100, 256)
-    for i in range (0,10):
-        s1 = '../../hw5_data/%s-%d_new.txt'%(s, i)
-        
+    i = -1
+    for ii in ['B', 'C', 'D', 'E', 'I', 'J', 'O', 'R', 'U', 'V']:
+    	i += 1
+        s1 = './C-II/%s-%s_new.txt'%(s, ii)
         f1 = file(s1, 'r')
         
         h = 0 
@@ -1369,8 +1637,9 @@ def PixelSpace(s):
 #handlefile('D')
 #Moment1NNL2()
 #Moment5NNL2()
-MinDistance()
-IdenticalCovariance()
+#MinDistance()
+#IdenticalCovariance()
 #Pixel1NNL2()
 #Pixel5NNL2()
 #PixelMinDistance()
+PixelIndependent()
