@@ -4,6 +4,7 @@
 import re
 import os
 import string
+import sys
 import math
 import numpy as np
 from random import randint
@@ -412,263 +413,218 @@ def Moment5NNL2():
 	MB = CentralMoment('B')
 	MC = CentralMoment('C')
 	MD = CentralMoment('D')
+
 	errorsA = 0
 	cA = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
+					min_dist[5] = 0
 					for i in range(0, 20):
-						dist += pow((MA[i][j][k] - MA[i][n][m]),2)
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+						min_dist[5] += pow((MA[i][j][k] - MA[i][n][m]),2)
+						if(min_dist[5] > min_dist[4]):
+							break
+					if min_dist[5] > min_dist[4]:
+						continue
+
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cA[j][classNum] += 1
 				errorsA += 1
 			else:
 				cA[j][j] += 1
+	
+	print >> f, "Testing set A"
+	print_mat(cA)
+	print >> f, errorsA
+
 	errorsB = 0
 	cB = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
+					min_dist[5] = 0
 					for i in range(0, 20):
-						dist += pow((MB[i][j][k] - MA[i][n][m]),2)
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+						min_dist[5] += pow((MB[i][j][k] - MA[i][n][m]),2)
+						if(min_dist[5] > min_dist[4]):
+							break
+					if min_dist[5] > min_dist[4]:
+						continue
+
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cB[j][classNum] += 1
 				errorsB += 1
 			else:
 				cB[j][j] += 1
+	
+	print >> f, "Testing set B"
+	print_mat(cB)
+	print >> f, errorsB
 
 	errorsC = 0
 	cC = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
-					for i in range(0, 10):
-						dist += pow((MB[i][j][k] - MA[i][n][m]),2)
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+					min_dist[5] = 0
+					for i in range(0, 20):
+						min_dist[5] += pow((MC[i][j][k] - MA[i][n][m]),2)
+						if(min_dist[5] > min_dist[4]):
+							break
+					if min_dist[5] > min_dist[4]:
+						continue
+
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cC[j][classNum] += 1
 				errorsC += 1
 			else:
 				cC[j][j] += 1
+	
+	print >> f, "Testing set C"
+	print_mat(cC)
+	print >> f, errorsC
+
 	errorsD = 0
 	cD = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
-					for i in range(0, 10):
-						dist += pow((MB[i][j][k] - MA[i][n][m]),2)
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+					min_dist[5] = 0
+					for i in range(0, 20):
+						min_dist[5] += pow((MD[i][j][k] - MA[i][n][m]),2)
+						if(min_dist[5] > min_dist[4]):
+							break
+					if min_dist[5] > min_dist[4]:
+						continue
+
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cD[j][classNum] += 1
 				errorsD += 1
 			else:
 				cD[j][j] += 1
-	print >> f, "Moment1NNL2:"
-	print >> f, "Testing set A"
-	print_mat(cA)
-	print >> f, errorsA
-
-	print >> f, "Testing set B"
-	print_mat(cB)
-	print >> f, errorsB
-
-	print >> f, "Testing set C"
-	print_mat(cC)
-	print >> f, errorsC
-
+	
 	print >> f, "Testing set D"
 	print_mat(cD)
 	print >> f, errorsD
-
-	print >> f, "Average error:"
-	errorsAverage = (errorsB+errorsC+errorsD)/3
-	print >> f, errorsAverage
 
 def print_mat(mat):
 	f = open('results.txt','a+')
@@ -1121,61 +1077,51 @@ def Pixel5NNL2():
 	cA = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
+					min_dist[5] = 0
 					for i in range(0, 256):
-						dist += pow((MA[j][k][i] - MA[n][m][i]),2)
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+						min_dist[5] += int(MA[j][k][i]) ^ int(MA[n][m][i])
+						if(min_dist[5] > min_dist[4]):
+							break
+					if min_dist[5] > min_dist[4]:
+						continue
+
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cA[j][classNum] += 1
 				errorsA += 1
 			else:
 				cA[j][j] += 1
+	
 	print >> f, "Testing set A"
 	print_mat(cA)
 	print >> f, errorsA
@@ -1184,61 +1130,51 @@ def Pixel5NNL2():
 	cB = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
+					min_dist[5] = 0
 					for i in range(0, 256):
-						dist += pow((MB[j][k][i] - MA[n][m][i]),2)
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+						min_dist[5] += int(MB[j][k][i]) ^ int(MA[n][m][i])
+						if(min_dist[5] > min_dist[4]):
+							break
+					if min_dist[5] > min_dist[4]:
+						continue
+
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cB[j][classNum] += 1
 				errorsB += 1
 			else:
 				cB[j][j] += 1
+	
 	print >> f, "Testing set B"
 	print_mat(cB)
 	print >> f, errorsB
@@ -1247,61 +1183,51 @@ def Pixel5NNL2():
 	cC = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
+					min_dist[5] = 0
 					for i in range(0, 256):
-						dist += pow((MC[j][k][i] - MA[n][m][i]),2)
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+						min_dist[5] += int(MC[j][k][i]) ^ int(MA[n][m][i])
+						if(min_dist[5] > min_dist[4]):
+							break
+					if min_dist[5] > min_dist[4]:
+						continue
+
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cC[j][classNum] += 1
 				errorsC += 1
 			else:
 				cC[j][j] += 1
+	
 	print >> f, "Testing set C"
 	print_mat(cC)
 	print >> f, errorsC
@@ -1310,61 +1236,51 @@ def Pixel5NNL2():
 	cD = np.zeros(100).reshape(10, 10) # class i to class j; class j to class i
 	for j in range (0, 10):
 		for k in range (0, 100):
-			min_dist = np.zeros(5);
-			min_n = np.zeros(5);
-			for x in range(0, 5):
-				min_dist[x] = 1000000
-				min_n[x] = 0
+			min_dist = [sys.maxint]*6;
+			min_n = [0]*6;
 			for n in range(0, 10):
 				for m in range(0, 100):
-					dist = 0
+					min_dist[5] = 0
 					for i in range(0, 256):
-						dist += pow((MD[j][k][i] - MA[n][m][i]),2)
-					if (dist < max(min_dist)):
-						for cnt in range (0, 5):
-							if min_dist[cnt] == max(min_dist):
-								min_dist[cnt] = dist
-								min_n[cnt] = n
-					if (dist == max(min_dist)):
-						r = randint(1,2)
-						if(r == 1):
-							for cnt in range (0, 5):
-								if min_dist[cnt] == max(min_dist):
-									min_dist[cnt] = dist
-									min_n[cnt] = n
+						min_dist[5] += int(MD[j][k][i]) ^ int(MA[n][m][i])
+						if(min_dist[5] > min_dist[4]):
+							break
+					if min_dist[5] > min_dist[4]:
+						continue
+
+					min_n[5] = n
+					p = 5
+					while(p >= 1):
+						if(min_dist[p] < min_dist[p-1]):
+							min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+							min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+							p -= 1
+						elif(min_dist[p] == min_dist[p-1]):
+							q = randint(1,2)
+							if(q == 1):
+								min_dist[p], min_dist[p-1] = min_dist[p-1], min_dist[p]
+								min_n[p], min_n[p-1] = min_n[p-1], min_n[p]
+								p -= 1
+						else:
+							break
+						
 			classes = np.zeros(10)
-			classNum = -1
-			n = 0
-			for cnt in range(0, 10):
-				classes[cnt] = 0
+			classNum = 0
 			for cnt in range(0, 5):
 				classes[min_n[cnt]] += 1
+			max_value = max(classes)
+			max_list = []
 			for cnt in range(0, 10):
-				if(classes[min_n[cnt]] >= 3):
-					classNum = min_n[cnt]
-					n = 3
-					break
-				elif(classes[min_n[cnt]] >= 2):
-					if(classNum != -1):
-						r = randint(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 2
-				elif(n <= 1 and classes[min_n[cnt]] >= 1):
-					if(classNum != -1):
-						r = randin(1,2)
-						if(r == 1):
-							classNum = min_n[cnt]
-					else:
-						classNum = min_n[cnt]
-					n = 1
+				if classes[cnt] == max_value:
+					max_list.append(cnt)
+			classNum = max_list[randint(0, len(max_list)-1)]
+				
 			if (j != classNum):
 				cD[j][classNum] += 1
 				errorsD += 1
 			else:
 				cD[j][j] += 1
+	
 	print >> f, "Testing set D"
 	print_mat(cD)
 	print >> f, errorsD
@@ -1636,10 +1552,10 @@ def PixelSpace(s):
 #handlefile('C')
 #handlefile('D')
 #Moment1NNL2()
-#Moment5NNL2()
+Moment5NNL2()
 #MinDistance()
 #IdenticalCovariance()
 #Pixel1NNL2()
 #Pixel5NNL2()
 #PixelMinDistance()
-PixelIndependent()
+#PixelIndependent()
