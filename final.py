@@ -1,6 +1,8 @@
 # !usr/bin/python
 # Filename: HW6.py
 
+import SVM
+from numpy import *
 import re
 import os
 import string
@@ -1396,6 +1398,24 @@ def PixelMinDistance():
 	print_mat(cD)
 	print >> f, errorsD
 
+def SupportVectorMachine():
+	MA = PixelSpace('A')
+	MB = PixelSpace('B')
+	MC = PixelSpace('C')
+	MD = PixelSpace('D')
+	errorsA = 0
+	errorsB = 0
+	errorsC = 0
+	errorsD = 0
+	
+	C = 0.6
+	toler = 0.001
+	maxIter = 50
+	svmClassifier = SVM.trainSVM(MA, MA, C, toler, maxIter, kernelOption = ('linear'))
+	accuracy = SVM.testSVM(svmClassifier, MB)
+	print accuracy
+
+
 def PixelIndependent():
 	MA = PixelSpace('A')
 	MB = PixelSpace('B')
@@ -1552,10 +1572,11 @@ def PixelSpace(s):
 #handlefile('C')
 #handlefile('D')
 #Moment1NNL2()
-Moment5NNL2()
+#Moment5NNL2()
 #MinDistance()
 #IdenticalCovariance()
 #Pixel1NNL2()
 #Pixel5NNL2()
 #PixelMinDistance()
 #PixelIndependent()
+SupportVectorMachine()
