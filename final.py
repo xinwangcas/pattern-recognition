@@ -1,7 +1,7 @@
 # !usr/bin/python
-# Filename: HW6.py
+# Filename: final.py
 
-import SVM
+from sklearn import svm
 from numpy import *
 import re
 import os
@@ -1403,18 +1403,44 @@ def SupportVectorMachine():
 	MB = PixelSpace('B')
 	MC = PixelSpace('C')
 	MD = PixelSpace('D')
-	errorsA = 0
-	errorsB = 0
-	errorsC = 0
-	errorsD = 0
-	
-	C = 0.6
-	toler = 0.001
-	maxIter = 50
-	svmClassifier = SVM.trainSVM(MA, MA, C, toler, maxIter, kernelOption = ('linear'))
-	accuracy = SVM.testSVM(svmClassifier, MB)
-	print accuracy
-
+	MatA = []
+	MatB = []
+	MatC = []
+	MatD = []
+	for i in range(0, 10):
+		for j in range(0, 100):
+			mA = np.zeros(256)
+			MatA.append(mA)
+			mA=MA[i][j]
+			mB = np.zeros(256)
+			MatB.append(mB)
+			mB=MB[i][j]
+			mC = np.zeros(256)
+			MatC.append(mC)
+			mC=MC[i][j]
+			mD = np.zeros(256)
+			MatD.append(mD)
+			mD=MD[i][j]
+	YA = np.zeros(1000)
+	YB = np.zeros(1000)
+	YC = np.zeros(1000)
+	YD = np.zeros(1000)
+	for i in range(0, 10):
+		for t in range (i*100, (i+1)*100):
+			YA[t] = i
+			YB[t] = i
+			YC[t] = i
+			YD[t] = i
+	clf = svm.SVC()
+	clf.fit(MatA, YA)
+	clf.predict(MatB)
+	dec = clf.decision_function(MatB)
+	print dec
+'''	
+	print >> f, "Testing Set D"
+	print_mat(cD)
+	print >> f, errorsD
+'''	
 
 def PixelIndependent():
 	MA = PixelSpace('A')
