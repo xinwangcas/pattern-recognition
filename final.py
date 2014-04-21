@@ -1410,17 +1410,17 @@ def SupportVectorMachine():
 	for i in range(0, 10):
 		for j in range(0, 100):
 			mA = np.zeros(256)
-			MatA.append(mA)
 			mA=MA[i][j]
+			MatA.append(mA)
 			mB = np.zeros(256)
-			MatB.append(mB)
 			mB=MB[i][j]
+			MatB.append(mB)
 			mC = np.zeros(256)
-			MatC.append(mC)
 			mC=MC[i][j]
+			MatC.append(mC)
 			mD = np.zeros(256)
-			MatD.append(mD)
 			mD=MD[i][j]
+			MatD.append(mD)
 	YA = np.zeros(1000)
 	YB = np.zeros(1000)
 	YC = np.zeros(1000)
@@ -1431,16 +1431,49 @@ def SupportVectorMachine():
 			YB[t] = i
 			YC[t] = i
 			YD[t] = i
-	clf = svm.SVC()
+	clf = svm.SVC( C=1.0, cache_size=200, class_weight=None, coef0=0.0, degree=3,
+	gamma=0.0, kernel='rbf', max_iter=-1, probability=False, random_state=None,
+	shrinking=True, tol=0.001, verbose=False)
 	clf.fit(MatA, YA)
-	clf.predict(MatB)
+	errorsA = 0
+	errorsB = 0
+	errorsC = 0
+	errorsD = 0
+	cA = np.zeros(100).reshape(10, 10)
+	cB = np.zeros(100).reshape(10, 10)
+	cC = np.zeros(100).reshape(10, 10)
+	cD = np.zeros(100).reshape(10, 10)
+	ZA = clf.predict(MatA)
+	ZB = clf.predict(MatB)
+	ZC = clf.predict(MatC)
+	ZD = clf.predict(MatD)
+	for i in range(0, 10):
+		for j in range(0, 100):
+			if (ZA[i*100+j] != i):
+				cA[i][ZA[i*100+j]] += 1
+				errorsA += 1
+			if (ZB[i*100+j] != i):
+				cB[i][ZB[i*100+j]] += 1
+				errorsB += 1
+			if (ZC[i*100+j] != i):
+				cC[i][ZC[i*100+j]] += 1
+				errorsC += 1
+			if (ZD[i*100+j] != i):
+				cD[i][ZD[i*100+j]] += 1
+				errorsD += 1
 	dec = clf.decision_function(MatB)
-	print dec
-'''	
+	print >> f, "Testing Set A"
+	print_mat(cA)
+	print >> f, errorsA
+	print >> f, "Testing Set B"
+	print_mat(cB)
+	print >> f, errorsB
+	print >> f, "Testing Set C"
+	print_mat(cC)
+	print >> f, errorsC
 	print >> f, "Testing Set D"
 	print_mat(cD)
 	print >> f, errorsD
-'''	
 
 def PixelIndependent():
 	MA = PixelSpace('A')
